@@ -1,53 +1,128 @@
-import { Request, Response } from "express";
-import Recipe from "../models/Recipe";
-
-export const getAllRecipes = async (req: Request, res: Response) => {
+const Recipemodel = require("../models/Recipe");
+///fecth all data
+const GetAllRecipe = async (req: any, res: any) => {
   try {
-    const recipes = await Recipe.find();
-    res.status(200).json(recipes);
+    const result = await Recipemodel.sort({ createdart: -1 }).populate();
+    res.status(303).json(result);
   } catch (error) {
-    res.status(500).json({ message: "Failed to fetch recipes", error });
-  }
-};
-
-export const getRecipeById = async (req: Request, res: Response) => {
-  try {
-    const recipe = await Recipe.findById(req.params.id);
-    if (!recipe) return res.status(404).json({ message: "Recipe not found" });
-    res.status(200).json(recipe);
-  } catch (error) {
-    res.status(500).json({ message: "Failed to fetch recipe", error });
-  }
-};
-
-export const createRecipe = async (req: Request, res: Response) => {
-  try {
-    const recipe = new Recipe(req.body);
-    await recipe.save();
-    res.status(201).json(recipe);
-  } catch (error) {
-    res.status(500).json({ message: "Failed to create recipe", error });
-  }
-};
-
-export const updateRecipe = async (req: Request, res: Response) => {
-  try {
-    const recipe = await Recipe.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
+    res.status(303).json({
+      message: " failed to fecth data",
     });
-    if (!recipe) return res.status(404).json({ message: "Recipe not found" });
-    res.status(200).json(recipe);
+  }
+};
+//fecth single data
+const GetSingleRecipe = async (req: any, res: any) => {
+  const { id } = req.params;
+  try {
+    const result = await Recipemodel.findBy(id).populate("title");
+
+    if (!result) {
+      return res.status(406).json({
+        message: `task${id}not found`,
+      });
+    } else {
+      res.status(201).json(result);
+    }
   } catch (error) {
-    res.status(500).json({ message: "Failed to update recipe", error });
+    res.status(303).json({
+      message: "fecth failed",
+    });
+  }
+};
+//update data
+const UpdateRecipe = async (req: any, res: any) => {
+  const { id } = req.params;
+  const { title, description, ingredients, instructions, cookingTime } =
+    req.body;
+  try {
+    const result = await Recipemodel.findById(id);
+    if (!result) {
+      return res.status(406).json({
+        message: `task${id}not found`,
+      });
+    } else {
+      result.title = title || result.title;
+      result.instructions = instructions || result.instructions;
+      result.description = description || result.description;
+      result.cookingTime = cookingTime || result.cookingTime;
+
+      result.projectLink = ingredients || result.ingredients;
+
+      await result.save();
+      res.status(201).json(result);
+    }
+  } catch (error) {
+    res.status(303).json({
+      message: " failed to update",
+    });
+  }
+};
+const DeleteRecipe = async (req: any, res: any) => {
+  const { id } = req.params;
+  try {
+    const result = await Recipemodel.findByIdAndDelete(id);
+    if (!result) {
+      return res.status(406).json({
+        message: `meal${id}not found`,
+      });
+    } else {
+      res.status(201).json({ message: `meal ${id} deleted successfully` });
+    }
+  } catch (error) {
+    res.status(303).json({
+      message: "internal server error",
+    });
+  }
+};
+///post data
+const createRecipe = async (req: any, res: any) => {
+  const { title, ingredients, instructions, cookingTime, description } =
+    req.body;
+  try {
+    ///check is task exists in data base
+    const projectExist = await Recipemodel.findOne({ title });
+    if (projectExist) {
+      res.status(405).json({
+        message: "alredy created",
+      });
+    }
+
+    ///to create new
+    const createNewrecipe = await Recipemodel.create({
+      title,
+      description,
+      ingredients,
+      instructions,
+      cookingTime,
+    });
+    ///saving ecerything is the reg.boby to the data base
+    const taskResult = await createNewrecipe.save();
+
+    ///where im returning the data if sucessfull
+    res.status(200).json(taskResult);
+    //or
+
+    res.status(200).json({
+      _id: taskResult._id,
+      tittle: taskResult.title,
+      ingredients: taskResult.ingredients,
+      description: taskResult.description,
+      cookingtime: taskResult.cookingTime.RecipeModel,
+
+      intructions: taskResult.instructions,
+    });
+  } catch (error) {
+    res.status(404).json({ message: "failed to fecth data" });
   }
 };
 
-export const deleteRecipe = async (req: Request, res: Response) => {
-  try {
-    const recipe = await Recipe.findByIdAndDelete(req.params.id);
-    if (!recipe) return res.status(404).json({ message: "Recipe not found" });
-    res.status(200).json({ message: "Recipe deleted successfully" });
-  } catch (error) {
-    res.status(500).json({ message: "Failed to delete recipe", error });
-  }
+module.exports = {
+  GetAllRecipe,
+
+  GetSingleRecipe,
+
+  UpdateRecipe,
+
+  DeleteRecipe,
+  createRecipe,
 };

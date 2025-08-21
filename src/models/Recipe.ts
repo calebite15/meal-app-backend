@@ -1,13 +1,40 @@
-import mongoose, { Schema, Document } from "mongoose";
+const mongoose = require("mongoose");
+const { ObjectId } = mongoose.Schema.Types;
+const Recipeschema = mongoose.Schema(
+  {
+    //     sample: {
+    //  type: String,
+    //  require:[true,"can't be empty"],
+    //  unique:true,
+    //  default:"bite"
+    // }
 
-export interface IRecipe extends Document {
-  title: string;
-  description: string;
-}
+    title: {
+      type: String,
+      require: true,
+    },
 
-const RecipeSchema: Schema = new Schema({
-  title: { type: String, required: true },
-  description: { type: String, required: true },
-});
+    description: {
+      type: String,
+      require: true,
+    },
 
-export default mongoose.model<IRecipe>("Recipe", RecipeSchema);
+    ingredients: {
+      type: String,
+      require: true,
+    },
+    instructions: {
+      type: String,
+      require: true,
+    },
+    cookingTime: {
+      type: String,
+      require: true,
+    },
+    // mealIMG: [""],
+  },
+  {
+    timestamp: true,
+  }
+);
+module.exports = mongoose.model("Recipe", Recipeschema);

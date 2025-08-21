@@ -1,7 +1,6 @@
 const Usermodel = require("../models/Usermodel");
 const bcrypt = require("bcryptjs");
-
-const SignUp = async (req: any, res: any) => {
+const Signup = async (req: any, res: any) => {
   const { firstname, lastName, phonenumber, Email, password, favouritemeal } =
     req.body;
   try {
@@ -34,7 +33,7 @@ const SignUp = async (req: any, res: any) => {
   }
 };
 
-const loginUser = async (req: any, res: any) => {
+const LoginUser = async (req: any, res: any) => {
   const { Email, password } = req.body;
   try {
     // === To check if task exist in the DB under task collection ===
@@ -73,4 +72,4 @@ const loginUser = async (req: any, res: any) => {
     });
   }
 };
-module.exports = { SignUp, loginUser };
+module.exports = { Signup, LoginUser };
